@@ -23,6 +23,14 @@ public class Main {
     )
     protected int port; // enemies on 9876, allies on 1234
 
+    @CommandLine.Option(
+            names = {"-h", "--host"},
+            description = "Subnet range/multicast address to use.",
+            required = true,
+            scope = CommandLine.ScopeType.INHERIT
+    )
+    protected String host;
+
     public static void main(String[] args) {
         // Source: https://stackoverflow.com/a/11159435
         String commandName = new java.io.File(
