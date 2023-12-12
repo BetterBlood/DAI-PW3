@@ -7,8 +7,7 @@ import picocli.CommandLine;
         description = "Tower Defense, third Practical Work of DAI",
         version = "1.0.0",
         subcommands = {
-                Server.class,
-                Client.class
+                // add subcommands here
         },
         scope = CommandLine.ScopeType.INHERIT,
         mixinStandardHelpOptions = true
