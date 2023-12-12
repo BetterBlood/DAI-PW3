@@ -1,6 +1,7 @@
 package ch.heigvd;
 
 import ch.heigvd.client.Client;
+import ch.heigvd.emitters.Archer;
 import lombok.Getter;
 import picocli.CommandLine;
 
@@ -9,6 +10,7 @@ import picocli.CommandLine;
         version = "1.0.0",
         subcommands = {
                 Client.class,
+                Archer.class
                 // add other subcommands here
 
         },
