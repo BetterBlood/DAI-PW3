@@ -10,6 +10,7 @@ import picocli.CommandLine;
         subcommands = {
                 Client.class,
                 // add other subcommands here
+
         },
         scope = CommandLine.ScopeType.INHERIT,
         mixinStandardHelpOptions = true
