@@ -24,7 +24,7 @@ import static java.lang.Thread.sleep;
 @CommandLine.Command(name = "client", description = "Starts a client for a game of Tower Defense")
 public class Client implements Callable<Integer> {
     private final Scanner sc = new Scanner(System.in);
-    private SimpleDateFormat dateFormat;
+    private final SimpleDateFormat dateFormat;
 
     @CommandLine.ParentCommand
     protected ch.heigvd.Main parent;
@@ -80,18 +80,38 @@ public class Client implements Callable<Integer> {
                     continue;
                 }
                 System.out.println("received :-" + message + "-"); // TODO : remove after tests (tmp debug)
+                String[] splitMessage = message.split(" ");
                 switch (messageType) // TODO : complete with interpretation of server answer
                 {
                     case ANSWER :
-                        System.out.println("TODO : server answer : ?");
+                        if (splitMessage.length <= 1 || splitMessage[1].isEmpty())
+                        {
+                            System.out.println("server give 0 info ???");
+                        }
+                        else
+                        {
+                            System.out.println("[TOWER INFO] : " + splitMessage[1]);
+                        }
                         break;
 
                     case ERROR_CD:
-                        System.out.println("TODO : server said ERROR_CD");
+                        if (splitMessage.length <= 1 || splitMessage[1].isEmpty() || !Utils.isNumeric(splitMessage[1]))
+                        {
+                            System.out.println("[SERVER ERROR] : error_cd not provided correctly");
+                        }
+                        else
+                        {
+                            System.out.println("[ALLY] : time left before action authorized : " + splitMessage[1]);
+                        }
                         break;
 
                     case GAME_LOST:
-                        System.out.println("TODO : server said GAME_LOST");
+                        System.out.println("[TOWER INFO] : GAME OVER X_X");
+                        exit(0); // TODO : quitter ou pas ?
+                        break;
+
+                    case ERROR:
+                        System.out.println("[SERVER ERROR] : invalide commande :`" + splitMessage[0] + "`");
                         break;
 
                     case PROTECT:
@@ -109,24 +129,6 @@ public class Client implements Callable<Integer> {
             e.printStackTrace();
             return 1;
         }
-        /*
-        try
-        {
-            sleep(2500);
-
-            while(true)
-            {
-                // listen server
-                // display info in console
-                System.out.println("listen serv " + parent.port);
-                Thread.sleep (5000);
-            }
-        }
-        catch (Exception e)
-        {
-            System.out.println("Error : " + e.getMessage());
-        }
-        return 0;//*/
     }
 
     public Integer waitUserInput() throws RuntimeException {
@@ -140,7 +142,7 @@ public class Client implements Callable<Integer> {
             int defaultValue = 10;
 
             String command;
-            String commandSplit[];
+            String[] commandSplit;
             String timestamp;
 
             while (true)
@@ -149,15 +151,6 @@ public class Client implements Callable<Integer> {
                 command = sc.nextLine().toUpperCase(); // listen user input
                 timestamp = dateFormat.format(new Date());
                 commandSplit = command.split(" ");
-
-                /*if (commandSplit.length == 0)
-                {
-                    message = MessageType.DEFAULT + " Hello, from '" + myself + "' no command : <" + command + "> at " + timestamp + ")";
-                }
-                else if (!MessageType.isIn(commandSplit[0]))
-                {
-                    message = MessageType.DEFAULT + " Hello, from '" + myself + "' error command : <" + command + "> at " + timestamp + ")";
-                }//*/
 
                 if (commandSplit.length == 0 || !MessageType.isIn(commandSplit[0]))
                 {
@@ -174,14 +167,14 @@ public class Client implements Callable<Integer> {
                     else if (   commandSplit[0].equalsIgnoreCase("LEAVE") ||
                                 commandSplit[0].equalsIgnoreCase("L")) {
                         System.out.println("Leaving...");
-                        exit(1);
+                        exit(0);
                     }
                 }
                 messageType = getByDimOrName(commandSplit[0]);
 
                 if (messageType == null)
                 {
-                    message = MessageType.DEFAULT + " Hello, from '" + myself + "' no command : <" + command + "> at " + timestamp + ")";
+                    message = MessageType.DEFAULT + " Hello, from '" + myself + "' not a command : <" + command + "> at " + timestamp + ")";
                     send(message, timestamp, serverAddress, socket);
                     continue;
                 }
@@ -215,28 +208,6 @@ public class Client implements Callable<Integer> {
             e.printStackTrace();
             return 1;
         }
-
-        //return 0;
-        /*
-        try
-        {
-            while(true)
-            {
-                // listen user input
-                System.out.println("listen client console input :" + parent.port);
-                String command = sc.nextLine().toUpperCase();
-
-                // send data to serv
-
-                System.out.println("Send '" + command + "' to server");
-                Thread.sleep (2500);
-            }
-        }
-        catch (Exception e)
-        {
-            System.out.println("Error : " + e.getMessage());
-        }
-        return 0;//*/
     }
 
     private void send(String message, String timestamp, InetAddress serverAddress, DatagramSocket socket) throws Exception
