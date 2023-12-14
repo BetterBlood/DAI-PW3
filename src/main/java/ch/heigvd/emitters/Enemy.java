@@ -26,8 +26,8 @@ public class Enemy implements Callable<Integer> {
 
     @CommandLine.Option(
             names = {"-d", "--damage"},
-            description = "Frequency of sending the message (in milliseconds) (default: 10000).",
-            defaultValue = "10000"
+            description = "Damage sent to tower (default: 10).",
+            defaultValue = "10"
     )
     private int damage;
 
