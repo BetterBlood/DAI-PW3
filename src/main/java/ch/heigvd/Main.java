@@ -2,6 +2,7 @@ package ch.heigvd;
 
 import ch.heigvd.client.Client;
 import ch.heigvd.emitters.Enemy;
+import ch.heigvd.server.Server;
 import lombok.Getter;
 import picocli.CommandLine;
 
@@ -10,7 +11,8 @@ import picocli.CommandLine;
         version = "1.0.0",
         subcommands = {
                 Client.class,
-                Enemy.class
+                Enemy.class,
+                Server.class
                 // add other subcommands here
 
         },
@@ -34,6 +36,13 @@ public class Main {
             scope = CommandLine.ScopeType.INHERIT
     )
     protected String host;
+
+    @CommandLine.Option(
+            names = {"-i", "--interface"},
+            description = "Interface to use",
+            required = true
+    )
+    protected String interfaceName;
 
     public static void main(String[] args) {
         // Source: https://stackoverflow.com/a/11159435
