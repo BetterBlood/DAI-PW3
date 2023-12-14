@@ -1,6 +1,7 @@
 package ch.heigvd;
 
 import ch.heigvd.client.Client;
+import ch.heigvd.emitters.Enemy;
 import lombok.Getter;
 import picocli.CommandLine;
 
@@ -9,6 +10,7 @@ import picocli.CommandLine;
         version = "1.0.0",
         subcommands = {
                 Client.class,
+                Enemy.class
                 // add other subcommands here
 
         },
