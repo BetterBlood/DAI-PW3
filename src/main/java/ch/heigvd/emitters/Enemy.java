@@ -10,22 +10,26 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-abstract public class Enemy implements Callable<Integer> {
+@CommandLine.Command(
+        name = "enemy",
+        description = "Start an UDP multicast emitter representing an enemy"
+)
+public class Enemy implements Callable<Integer> {
     @CommandLine.ParentCommand
-    protected ch.heigvd.Main parent;
+    private ch.heigvd.Main parent;
     @CommandLine.Option(
             names = {"-pa", "--pause"},
             description = "Pause between attacks (in milliseconds) (default: 10000).",
             defaultValue = "10000"
     )
-    protected int pause;
+    private int pause;
 
     @CommandLine.Option(
             names = {"-d", "--damage"},
             description = "Frequency of sending the message (in milliseconds) (default: 10000).",
             defaultValue = "10000"
     )
-    protected int damage;
+    private int damage;
 
     @CommandLine.Option(
             names = {"-i", "--interface"},
@@ -33,7 +37,14 @@ abstract public class Enemy implements Callable<Integer> {
             scope = CommandLine.ScopeType.INHERIT,
             required = true
     )
-    protected String interfaceName;
+    private String interfaceName;
+
+    @CommandLine.Option(
+            names = {"-n", "--name"},
+            description = "Name of the enemy.",
+            defaultValue = "Enemy"
+    )
+    private String name;
 
 
     @Override
@@ -50,7 +61,7 @@ abstract public class Enemy implements Callable<Integer> {
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
             scheduler.scheduleAtFixedRate(() -> {
                 try {
-                    String message = "ATTACK " + this.getClass().getSimpleName() + " " + damage;
+                    String message = "ATTACK " + name + " " + damage;
 
                     System.out.println("Multicasting '" + message + "' to " + parent.getHost() + ":" + parent.getPort() + " on interface " + interfaceName);
 
