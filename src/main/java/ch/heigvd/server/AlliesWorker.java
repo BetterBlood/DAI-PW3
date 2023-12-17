@@ -1,5 +1,8 @@
 package ch.heigvd.server;
 
+import ch.heigvd.utils.MessageType;
+import ch.heigvd.utils.ProtectionType;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -11,7 +14,13 @@ import java.util.concurrent.Executors;
     public class AlliesWorker implements Callable<Integer> {
     protected ch.heigvd.Main parent;
         // This is new - could be passed as a parameter with picocli
+        private TowerDefense tower;
+
         private static final int NUMBER_OF_THREADS = 1;
+
+        public AlliesWorker(TowerDefense tower) {
+            this.tower = tower;
+        }
 
         @Override
         public Integer call() {
@@ -36,7 +45,7 @@ import java.util.concurrent.Executors;
                     socket.receive(packet);
 
                     // This is new - we submit a new task to the executor service
-                    executor.submit(new ClientHandler(packet, myself));
+                    executor.submit(new ClientHandler(packet, myself, tower, socket));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -50,9 +59,14 @@ import java.util.concurrent.Executors;
             private final DatagramPacket packet;
             private final String myself;
 
-            public ClientHandler(DatagramPacket packet, String myself) {
+            private TowerDefense tower;
+            private DatagramSocket socket;
+
+            public ClientHandler(DatagramPacket packet, String myself, TowerDefense tower, DatagramSocket socket) {
                 this.packet = packet;
                 this.myself = myself;
+                this.tower = tower;
+                this.socket = socket;
             }
 
             @Override
@@ -66,16 +80,20 @@ import java.util.concurrent.Executors;
 
                 System.out.println("Unicast receiver (" + myself + ") received message: " + message);
 
-                System.out.println("Going to sleep for 10 seconds...");
+                //aucun autre check parce qu'on a codé le client ou bien quand même ?
 
-                // Sleep for a while to simulate a long-running task
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if(MessageType.PROTECT  == MessageType.findByName(message)){
+                    ProtectionType proType = ProtectionType.valueOf(message.split(" ")[1]);
+                    int amount = Integer.getInteger(message.split(" ")[2]);
+
+                    switch (proType){
+                        case DEFEND  :
+                            tower.addProtection(amount);
+                        case HEAL:
+                            tower.heal(amount);
+
+                    }
                 }
-
-                System.out.println("End of sleep");
             }
         }
     }

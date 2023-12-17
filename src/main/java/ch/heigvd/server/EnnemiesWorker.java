@@ -13,9 +13,12 @@ public class EnnemiesWorker implements Callable<Integer> {
             description = "Subnet range/multicast address to use.",
             required = true
     )
+    
     protected String host;
-
-
+    private TowerDefense tower;
+   public EnnemiesWorker(TowerDefense tower) {
+        this.tower = tower;
+    }
 
     @Override
     public Integer call() {
@@ -45,6 +48,12 @@ public class EnnemiesWorker implements Callable<Integer> {
                         StandardCharsets.UTF_8
                 );
 
+                String[] msgChunks = message.split(" ");
+
+                if(msgChunks[0].toUpperCase() == "ATTACK"){
+                    processAttack(msgChunks);
+                }
+
                 System.out.println("Multicast receiver (" + myself + ") received message: " + message);
             }
 
@@ -53,5 +62,8 @@ public class EnnemiesWorker implements Callable<Integer> {
             e.printStackTrace();
             return 1;
         }
+    }
+    private void processAttack(String [] msgChunks){
+       tower.takeDamage(Integer.parseInt(msgChunks[2]));
     }
 }
