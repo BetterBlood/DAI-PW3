@@ -2,6 +2,7 @@ package ch.heigvd.server;
 
 import ch.heigvd.utils.MessageType;
 import ch.heigvd.utils.ProtectionType;
+import picocli.CommandLine;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -12,14 +13,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
     public class AlliesWorker implements Callable<Integer> {
-    protected ch.heigvd.Main parent;
+
         // This is new - could be passed as a parameter with picocli
         private TowerDefense tower;
 
         private static final int NUMBER_OF_THREADS = 1;
+        private ch.heigvd.Main parent;
+        private int port;
+        private String host;
 
-        public AlliesWorker(TowerDefense tower) {
+        public AlliesWorker(TowerDefense tower,ch.heigvd.Main parent, int portu, String hostu) {
             this.tower = tower;
+            this.parent = parent;
+            this.port = portu;
+            host = hostu;
+
         }
 
         @Override
@@ -27,11 +35,11 @@ import java.util.concurrent.Executors;
             // This is new - we define an executor service
             ExecutorService executor = null;
 
-            try (DatagramSocket socket = new DatagramSocket(parent.getPort())) {
+            try (DatagramSocket socket = new DatagramSocket(port)) {
                 // This is new - the executor service has a pool of threads
                 executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-                String myself = InetAddress.getLocalHost().getHostAddress() + ":" + parent.getPort();
+                String myself = InetAddress.getLocalHost().getHostAddress() + ":" + port;
                 System.out.println("Unicast receiver started (" + myself + ")");
 
                 byte[] receiveData = new byte[1024];
@@ -93,6 +101,7 @@ import java.util.concurrent.Executors;
                             tower.heal(amount);
 
                     }
+
                 }
             }
         }

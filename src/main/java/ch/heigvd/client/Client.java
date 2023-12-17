@@ -25,6 +25,21 @@ public class Client implements Callable<Integer> {
     @CommandLine.ParentCommand
     protected ch.heigvd.Main parent;
 
+    @CommandLine.Option(
+            names = {"-p", "--port"},
+            description = "Port to use for the mulitcast connection (default: 1234).",
+            defaultValue = "1234"
+    )
+    protected int port;
+
+    @CommandLine.Option(
+            names = {"-h", "--host"},
+            description = "Host for the unicast connection",
+            required = true,
+            defaultValue = "172.19.0.4"
+    )
+    protected String host;
+
     public Client() {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
@@ -42,9 +57,9 @@ public class Client implements Callable<Integer> {
 
     public Integer waitUserInput() throws RuntimeException {
         try (DatagramSocket socket = new DatagramSocket()) {
-            String myself = InetAddress.getLocalHost().getHostAddress() + ":" + parent.getPort();
+            String myself = InetAddress.getLocalHost().getHostAddress() + ":" + port;
             System.out.println("Client emitter started (" + myself + ")");
-            InetAddress serverAddress = InetAddress.getByName(parent.getHost());
+            InetAddress serverAddress = InetAddress.getByName(host);
 
             String message = "";
             MessageType messageType; // protect/pro or get_info/get
@@ -56,7 +71,7 @@ public class Client implements Callable<Integer> {
 
             while (true)
             {
-                System.out.println("listen client console input :" + parent.getPort());
+                System.out.println("listen client console input :" + port);
                 command = sc.nextLine().toUpperCase(); // listen user input
                 timestamp = dateFormat.format(new Date());
                 commandSplit = command.split(" ");
@@ -121,7 +136,7 @@ public class Client implements Callable<Integer> {
 
     private void send(String message, String timestamp, InetAddress serverAddress, DatagramSocket socket) throws Exception
     {
-        System.out.println("Unicasting '" + message + "' to " + parent.getHost() + ":" + parent.getPort() + " at " + timestamp);
+        System.out.println("Unicasting '" + message + "' to " + host + ":" + port + " at " + timestamp);
 
         byte[] payload = message.getBytes(StandardCharsets.UTF_8);
 
@@ -129,7 +144,7 @@ public class Client implements Callable<Integer> {
                 payload,
                 payload.length,
                 serverAddress,
-                parent.getPort()
+                port
         );
         System.out.print("sending... ");
         socket.send(datagram); // send data to serv

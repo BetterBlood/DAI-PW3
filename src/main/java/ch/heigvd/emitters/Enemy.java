@@ -46,15 +46,31 @@ public class Enemy implements Callable<Integer> {
     )
     private String name;
 
+    @CommandLine.Option(
+            names = {"-p", "--port"},
+            description = "Port to use for the mulitcast connection (default: 9876).",
+            defaultValue = "9876",
+            scope = CommandLine.ScopeType.INHERIT
+    )
+    protected int port;
+
+    @CommandLine.Option(
+            names = {"-h", "--host"},
+            description = "Subnet range/multicast address to use.",
+            required = true,
+            scope = CommandLine.ScopeType.INHERIT
+    )
+    protected String host;
+
 
     @Override
     public Integer call() {
-        try (MulticastSocket socket = new MulticastSocket(parent.getPort())) {
-            String myself = InetAddress.getLocalHost().getHostAddress() + ":" + parent.getPort();
+        try (MulticastSocket socket = new MulticastSocket(port)) {
+            String myself = InetAddress.getLocalHost().getHostAddress() + ":" + port;
             System.out.println("Archer Multicast emitter started (" + myself + ")");
 
-            InetAddress multicastAddress = InetAddress.getByName(parent.getHost());
-            InetSocketAddress group = new InetSocketAddress(multicastAddress, parent.getPort());
+            InetAddress multicastAddress = InetAddress.getByName(host);
+            InetSocketAddress group = new InetSocketAddress(multicastAddress, port);
             NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
             socket.joinGroup(group, networkInterface);
 
@@ -63,7 +79,7 @@ public class Enemy implements Callable<Integer> {
                 try {
                     String message = "ATTACK " + name + " " + damage;
 
-                    System.out.println("Multicasting '" + message + "' to " + parent.getHost() + ":" + parent.getPort() + " on interface " + interfaceName);
+                    System.out.println("Multicasting '" + message + "' to " + host + ":" + port + " on interface " + interfaceName);
 
                     byte[] payload = message.getBytes(StandardCharsets.UTF_8);
 

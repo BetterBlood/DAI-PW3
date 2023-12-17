@@ -11,7 +11,45 @@ import java.util.concurrent.TimeUnit;
 public class Server implements Callable<Integer> {
 
     //add port
+    @CommandLine.ParentCommand
+    protected ch.heigvd.Main parent;
+    @CommandLine.Option(
+            names = {"-i", "--interface"},
+            description = "Interface to use",
+            required = true
+    )
+    protected String interfaceName;
 
+    @CommandLine.Option(
+            names = {"-pu", "--portu"},
+            description = "Port to use for the unicast connections (default: 1234).",
+            defaultValue = "1234",
+            scope = CommandLine.ScopeType.INHERIT
+    )
+    protected int portu; // enemies on 9876, allies on 1234
+    @CommandLine.Option(
+            names = {"-pm", "--portm"},
+            description = "Port to use for the mulitcast connection (default: 9876).",
+            defaultValue = "9876",
+            scope = CommandLine.ScopeType.INHERIT
+    )
+    protected int portm;
+
+    @CommandLine.Option(
+            names = {"-hu", "--hostu"},
+            description = "IP address to use for the unicast connections",
+            required = true,
+            scope = CommandLine.ScopeType.INHERIT
+    )
+    protected String hostu;
+
+    @CommandLine.Option(
+            names = {"-hm", "--hostm"},
+            description = "Subnet range/multicast address to use.",
+            required = true,
+            scope = CommandLine.ScopeType.INHERIT
+    )
+    protected String hostm;
     private TowerDefense tower;
     public Integer call() {
         ExecutorService executorService = Executors.newFixedThreadPool(2); // The number of threads in the pool must be the same as the number of tasks you want to run in parallel
@@ -32,13 +70,13 @@ public class Server implements Callable<Integer> {
     }
 
     public Integer alliesWorker() {
-        AlliesWorker a = new AlliesWorker(tower);
+        AlliesWorker a = new AlliesWorker(tower,parent,portu,hostu);
         a.call();
         return 1;
     }
 
     public Integer ennemiesWorker() {
-        EnnemiesWorker e = new EnnemiesWorker(tower);
+        EnnemiesWorker e = new EnnemiesWorker(tower,interfaceName,parent,portm,hostm);
         e.call();
         return 1;
     }

@@ -6,29 +6,29 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 
 public class EnnemiesWorker implements Callable<Integer> {
-    protected ch.heigvd.Main parent;
 
-    @CommandLine.Option(
-            names = {"-H", "--host"},
-            description = "Subnet range/multicast address to use.",
-            required = true
-    )
-    
-    protected String host;
     private TowerDefense tower;
-   public EnnemiesWorker(TowerDefense tower) {
+    private String interfaceName;
+    private ch.heigvd.Main parent;
+    private int port;
+    private String host;
+   public EnnemiesWorker(TowerDefense tower, String interfaceName,ch.heigvd.Main parent , int portm, String hostm) {
         this.tower = tower;
+        this.interfaceName = interfaceName;
+        this.parent = parent;
+        this.port = portm;
+        host = hostm;
     }
 
     @Override
     public Integer call() {
-        try (MulticastSocket socket = new MulticastSocket(parent.getPort())) {
-            String myself = InetAddress.getLocalHost().getHostAddress() + ":" + parent.getPort();
+        try (MulticastSocket socket = new MulticastSocket(port)) {
+            String myself = InetAddress.getLocalHost().getHostAddress() + ":" + port;
             System.out.println("Multicast receiver started (" + myself + ")");
 
             InetAddress multicastAddress = InetAddress.getByName(host);
-            InetSocketAddress group = new InetSocketAddress(multicastAddress, parent.getPort());
-            NetworkInterface networkInterface = NetworkInterface.getByName(parent.getInterfaceName());
+            InetSocketAddress group = new InetSocketAddress(multicastAddress, port);
+            NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
             socket.joinGroup(group, networkInterface);
 
             byte[] receiveData = new byte[1024];
@@ -50,7 +50,7 @@ public class EnnemiesWorker implements Callable<Integer> {
 
                 String[] msgChunks = message.split(" ");
 
-                if(msgChunks[0].toUpperCase() == "ATTACK"){
+                if(msgChunks[0].equals("ATTACK")){
                     processAttack(msgChunks);
                 }
 
@@ -64,6 +64,10 @@ public class EnnemiesWorker implements Callable<Integer> {
         }
     }
     private void processAttack(String [] msgChunks){
-       tower.takeDamage(Integer.parseInt(msgChunks[2]));
+       try {
+           tower.takeDamage(Integer.parseInt(msgChunks[2]));
+       } catch (NumberFormatException e){
+           e.printStackTrace();
+       }
     }
 }

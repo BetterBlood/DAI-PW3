@@ -4,7 +4,7 @@ networks:
 
 services:
   multicast-emitter-archer1:
-    image: ghcr.io/betterblood/tower-defense:v0.3
+    image: pw3:latest
     command:
       - enemy
       - --pause=10000
@@ -15,7 +15,7 @@ services:
       - --name=archer1
 
   multicast-emitter-archer2:
-    image: ghcr.io/betterblood/tower-defense:v0.3
+    image: pw3:latest
     command:
       - enemy
       - --pause=3000
@@ -24,3 +24,14 @@ services:
       - --port=9876
       - --interface=eth0
       - --name=archer2
+  server:
+    image: pw3:latest
+    command:
+      - server
+      - --hostm=239.1.1.1
+      - --hostu=localhost
+      - --portm=9876
+      - --portu=1234
+      - --interface=eth0
+    ports:
+      - "1234:1234"
