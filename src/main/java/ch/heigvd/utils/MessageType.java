@@ -10,14 +10,13 @@ public enum MessageType {
 
     // Server
     ANSWER,
-    ERROR_CD,
     GAME_LOST,
     ERROR,
 
     // Other
     DEFAULT;
 
-    private final static String[] correspondTo = {"att", "pro", "get", "ans", "ecd", "glo", "err", "def"};
+    private final static String[] correspondTo = {"att", "pro", "get", "ans", "glo", "err", "def"};
 
     /**
      * try to find the corresponding enum
