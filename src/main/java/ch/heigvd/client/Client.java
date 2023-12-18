@@ -5,21 +5,17 @@ import ch.heigvd.utils.ProtectionType;
 import ch.heigvd.utils.Utils;
 import picocli.CommandLine;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Scanner;
-import java.util.concurrent.*;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Scanner;
+import java.util.concurrent.Callable;
 
 import static ch.heigvd.utils.MessageType.getByDimOrName;
 import static java.lang.System.exit;
-import static java.lang.Thread.sleep;
 
 @CommandLine.Command(name = "client", description = "Starts a client for a game of Tower Defense")
 public class Client implements Callable<Integer> {
@@ -35,100 +31,13 @@ public class Client implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        ExecutorService executorService = Executors.newFixedThreadPool(2); // The number of threads in the pool must be the same as the number of tasks you want to run in parallel
-
         try {
-            executorService.submit(this::listenServer); // Start the first task
-            executorService.submit(this::waitUserInput); // Start the second task
-
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // Wait for termination
+            waitUserInput();
         } catch (Exception e) {
             e.printStackTrace();
             return 1;
-        } finally {
-            executorService.shutdown();
         }
         return 0;
-    }
-
-    public Integer listenServer() {
-
-        try (DatagramSocket socket = new DatagramSocket(parent.getPort())) {
-            // This is new - the executor service has a pool of threads
-
-            String myself = InetAddress.getLocalHost().getHostAddress() + ":" + parent.getPort();
-            System.out.println("Client receiver started (" + myself + ")");
-
-            byte[] receiveData = new byte[1024];
-
-            while (true) {
-                DatagramPacket packet = new DatagramPacket(
-                        receiveData,
-                        receiveData.length
-                );
-
-                socket.receive(packet); // listen server
-                String message = new String(
-                        packet.getData(),
-                        packet.getOffset(),
-                        packet.getLength(),
-                        StandardCharsets.UTF_8
-                );
-                MessageType messageType = MessageType.findByName(message.split(" ")[0]);
-                if (messageType == null) {
-                    System.out.println("received message not handled : " + message);
-                    continue;
-                }
-                System.out.println("received :-" + message + "-"); // TODO : remove after tests (tmp debug)
-                String[] splitMessage = message.split(" ");
-                switch (messageType) // TODO : complete with interpretation of server answer
-                {
-                    case ANSWER :
-                        if (splitMessage.length <= 1 || splitMessage[1].isEmpty())
-                        {
-                            System.out.println("server give 0 info ???");
-                        }
-                        else
-                        {
-                            System.out.println("[TOWER INFO] : " + splitMessage[1]);
-                        }
-                        break;
-
-                    case ERROR_CD:
-                        if (splitMessage.length <= 1 || splitMessage[1].isEmpty() || !Utils.isNumeric(splitMessage[1]))
-                        {
-                            System.out.println("[SERVER ERROR] : error_cd not provided correctly");
-                        }
-                        else
-                        {
-                            System.out.println("[ALLY] : time left before action authorized : " + splitMessage[1]);
-                        }
-                        break;
-
-                    case GAME_LOST:
-                        System.out.println("[TOWER INFO] : GAME OVER X_X");
-                        exit(0); // TODO : quitter ou pas ?
-                        break;
-
-                    case ERROR:
-                        System.out.println("[SERVER ERROR] : invalide commande :`" + splitMessage[0] + "`");
-                        break;
-
-                    case PROTECT:
-                    case GET_INFO :
-                        System.out.println("TODO : ignore, receive self information");
-                        break;
-
-                    case ATTACK:
-                    case DEFAULT:
-                        System.out.println("TODO : tmp test WIP, to ignore as PROTECT and GET_IMFO");
-                        break;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 1;
-        }
     }
 
     public Integer waitUserInput() throws RuntimeException {
@@ -226,6 +135,57 @@ public class Client implements Callable<Integer> {
         socket.send(datagram); // send data to serv
         System.out.println("data sended !");
 
-        sleep(200);// waiting for receiving an answer (not really gorgeous)
+        socket.receive(datagram);
+        message = new String(
+                datagram.getData(),
+                datagram.getOffset(),
+                datagram.getLength(),
+                StandardCharsets.UTF_8
+        );
+        MessageType messageType = MessageType.findByName(message.split(" ")[0]);
+        System.out.println("RECEIVED :" + message);
+        if (messageType == null) {
+            System.out.println("received message not handled : " + message);
+            return;
+        }
+        System.out.println("received :-" + message + "-"); // TODO : remove after tests (tmp debug)
+        String[] splitMessage = message.split(" ");
+
+        switch (messageType)
+        {
+            case ANSWER :
+                if (splitMessage.length <= 1 || splitMessage[1].isEmpty())
+                {
+                    System.out.println("[SERVER ERROR] : server give 0 info ?");
+                }
+                else
+                {
+                    System.out.print("[TOWER INFO] :");
+                    for (int i = 1; i < splitMessage.length; ++i)
+                    {
+                        System.out.print(" ");
+                        System.out.print(splitMessage[i]);
+                    }
+                    System.out.println();
+                }
+                break;
+
+            case GAME_LOST:
+                System.out.println("[TOWER INFO] : GAME OVER X_X (presse enter to leave)");
+                sc.nextLine();
+                exit(0);
+                break;
+
+            case ERROR:
+                System.out.println("[SERVER ERROR] : invalide commande :`" + message + "`");
+                break;
+
+            case PROTECT:
+            case GET_INFO:
+            case ATTACK:
+            case DEFAULT:
+                // ne devrait pas arriver
+                break;
+        }
     }
 }
