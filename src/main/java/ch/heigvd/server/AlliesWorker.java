@@ -2,8 +2,8 @@ package ch.heigvd.server;
 
 import ch.heigvd.utils.MessageType;
 import ch.heigvd.utils.ProtectionType;
-import picocli.CommandLine;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -12,15 +12,17 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-    public class AlliesWorker implements Callable<Integer> {
+import static ch.heigvd.utils.Utils.send;
+
+public class AlliesWorker implements Callable<Integer> {
 
         // This is new - could be passed as a parameter with picocli
         private TowerDefense tower;
 
         private static final int NUMBER_OF_THREADS = 1;
         private ch.heigvd.Main parent;
-        private int port;
-        private String host;
+        static private int port;
+        static private String host;
 
         public AlliesWorker(TowerDefense tower,ch.heigvd.Main parent, int portu, String hostu) {
             this.tower = tower;
@@ -87,22 +89,38 @@ import java.util.concurrent.Executors;
                 );
 
                 System.out.println("Unicast receiver (" + myself + ") received message: " + message);
-
+                String timestamp;
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 //aucun autre check parce qu'on a codé le client ou bien quand même ?
 
-                if(MessageType.PROTECT  == MessageType.findByName(message)){
+                if(MessageType.PROTECT  == MessageType.findByName(message.split(" ")[0])){
                     ProtectionType proType = ProtectionType.valueOf(message.split(" ")[1]);
-                    int amount = Integer.getInteger(message.split(" ")[2]);
+                    int amount = Integer.parseInt(message.split(" ")[2]);
 
                     switch (proType){
                         case DEFEND  :
                             tower.addProtection(amount);
                         case HEAL:
                             tower.heal(amount);
-
                     }
-
+                } else if (MessageType.GET_INFO == MessageType.findByName(message)) {
+                    timestamp = dateFormat.format(new Date());
+                    try {
+                        send(tower.toString(), timestamp, InetAddress.getByName(host), socket,host ,port); // nos adresses
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 }
+                //nouveau paquet à renvoyer à la personne qui va expédier
+                String response = "RESPONSE";
+                byte[] payload = message.getBytes(StandardCharsets.UTF_8);
+                DatagramPacket datagram = new DatagramPacket(
+                        payload,
+                        payload.length,
+                        packet.getAddress(),
+                        packet.getPort() //connection bidirectionnelle dans ce contexte là grâce
+                        // à l'information de l'expéditeur contenu dans le datagram
+                );
             }
         }
     }

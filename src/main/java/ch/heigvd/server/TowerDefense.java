@@ -36,4 +36,11 @@ public class TowerDefense {
         this.protection += protection;
     }
 
+    @Override
+    public String toString() {
+        return "TowerDefense{" +
+                "hp=" + hp +
+                ", protection=" + protection +
+                '}';
+    }
 }
