@@ -16,17 +16,14 @@ import static ch.heigvd.utils.MessageType.ANSWER;
 
 public class AlliesWorker implements Callable<Integer> {
 
-    // This is new - could be passed as a parameter with picocli
     private static TowerDefense tower;
-
+    //we still don't know how to use this param with picocli
     private static final int NUMBER_OF_THREADS = 1;
-    private ch.heigvd.Main parent;
     static private int port;
     static private String host;
 
-    public AlliesWorker(TowerDefense tower, ch.heigvd.Main parent, int portu, String hostu) {
+    public AlliesWorker(TowerDefense tower, int portu, String hostu) {
         this.tower = tower;
-        this.parent = parent;
         this.port = portu;
         host = hostu;
 
@@ -121,7 +118,6 @@ public class AlliesWorker implements Callable<Integer> {
             return response;
         }
 
-        // TODO : check if message is valid
         switch (messageType) {
             case PROTECT:
                 ProtectionType protectionType = ProtectionType.findByName(splitMessage[1]);
