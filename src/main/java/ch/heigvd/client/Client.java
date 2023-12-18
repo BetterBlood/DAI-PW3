@@ -80,9 +80,12 @@ public class Client implements Callable<Integer> {
                             commandSplit[0].equalsIgnoreCase("H")) {
                         System.out.println("Help Command Menu :");
                         System.out.println("h, H, help, HELP : this menu");
-                        System.out.println("pro heal 15 : heal with 15");
+                        System.out.println("pro h 15 : heal with 15");
+                        System.out.println("protect heal 15 : heal with 15");
+                        System.out.println("pro d 15 : defend with 15");
                         System.out.println("pro defend 15 : defend with 15");
                         System.out.println("get, GET_INFO : request tower information");
+                        System.out.println("l, leave : to quit application");
                         continue;
                     } else if (commandSplit[0].equalsIgnoreCase("LEAVE") ||
                             commandSplit[0].equalsIgnoreCase("L")) {
@@ -140,20 +143,24 @@ public class Client implements Callable<Integer> {
         socket.send(datagram); // send data to serv
         System.out.println("data sended !");
 
-        socket.receive(datagram);
+        byte[] responseBuffer = new byte[1024];
+        DatagramPacket responsePacket = new DatagramPacket(responseBuffer, responseBuffer.length);
+
+        socket.receive(responsePacket);
+
         message = new String(
-                datagram.getData(),
-                datagram.getOffset(),
-                datagram.getLength(),
+                responsePacket.getData(),
+                responsePacket.getOffset(),
+                responsePacket.getLength(),
                 StandardCharsets.UTF_8
         );
         MessageType messageType = MessageType.findByName(message.split(" ")[0]);
-        System.out.println("RECEIVED :" + message);
+        //System.out.println("RECEIVED :" + message);
         if (messageType == null) {
             System.out.println("received message not handled : " + message);
             return;
         }
-        System.out.println("received :-" + message + "-"); // TODO : remove after tests (tmp debug)
+        System.out.println("received : -" + message + "-"); // TODO : remove after tests (tmp debug)
         String[] splitMessage = message.split(" ");
 
         switch (messageType) {
