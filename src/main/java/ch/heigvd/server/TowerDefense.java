@@ -3,12 +3,12 @@ package ch.heigvd.server;
 import lombok.Getter;
 import lombok.Synchronized;
 
-public class TowerDefence {
+public class TowerDefense {
     @Getter(onMethod_={@Synchronized})
     private int hp;
     private int protection;
 
-    TowerDefence(int baseHP, int baseProtection) {
+    TowerDefense(int baseHP, int baseProtection) {
         this.hp = baseHP;
         this.protection = baseProtection;
     }
@@ -36,4 +36,11 @@ public class TowerDefence {
         this.protection += protection;
     }
 
+    @Override
+    public String toString() {
+        return "TowerDefense{" +
+                "hp=" + hp +
+                ", protection=" + protection +
+                '}';
+    }
 }

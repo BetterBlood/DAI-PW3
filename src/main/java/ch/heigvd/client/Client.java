@@ -25,6 +25,21 @@ public class Client implements Callable<Integer> {
     @CommandLine.ParentCommand
     protected ch.heigvd.Main parent;
 
+    @CommandLine.Option(
+            names = {"-p", "--port"},
+            description = "Port to use for the mulitcast connection (default: 1234).",
+            defaultValue = "1234"
+    )
+    protected int port;
+
+    @CommandLine.Option(
+            names = {"-h", "--host"},
+            description = "Host for the unicast connection",
+            required = true,
+            defaultValue = "172.19.0.4"
+    )
+    protected String host;
+
     public Client() {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
@@ -40,11 +55,11 @@ public class Client implements Callable<Integer> {
         return 0;
     }
 
-    public Integer waitUserInput() throws RuntimeException {
+    public void waitUserInput() throws RuntimeException {
         try (DatagramSocket socket = new DatagramSocket()) {
-            String myself = InetAddress.getLocalHost().getHostAddress() + ":" + parent.getPort();
+            String myself = InetAddress.getLocalHost().getHostAddress() + ":" + port;
             System.out.println("Client emitter started (" + myself + ")");
-            InetAddress serverAddress = InetAddress.getByName(parent.getHost());
+            InetAddress serverAddress = InetAddress.getByName(host);
 
             String message = "";
             MessageType messageType; // protect/pro or get_info/get
@@ -53,49 +68,40 @@ public class Client implements Callable<Integer> {
             String command;
             String[] commandSplit;
             String timestamp;
-
-            while (true)
-            {
-                System.out.println("listen client console input :" + parent.getPort());
+            //chaque fois qu'on send on attend la réponse sur LE MEME DATAGRAM envoyé on est donc seulement un emetteur
+            while (true) {
+                System.out.println("listen client console input :" + port);
                 command = sc.nextLine().toUpperCase(); // listen user input
                 timestamp = dateFormat.format(new Date());
                 commandSplit = command.split(" ");
 
-                if (commandSplit.length == 0 || !MessageType.isIn(commandSplit[0]))
-                {
-                    if (    commandSplit[0].equalsIgnoreCase("HELP") ||
-                            commandSplit[0].equalsIgnoreCase("H"))
-                    {
+                if (commandSplit.length == 0 || !MessageType.isIn(commandSplit[0])) {
+                    if (commandSplit[0].equalsIgnoreCase("HELP") ||
+                            commandSplit[0].equalsIgnoreCase("H")) {
                         System.out.println("Help Command Menu :");
                         System.out.println("h, H, help, HELP : this menu");
                         System.out.println("pro heal 15 : heal with 15");
                         System.out.println("pro defend 15 : defend with 15");
                         System.out.println("get, GET_INFO : request tower information");
                         continue;
-                    }
-                    else if (   commandSplit[0].equalsIgnoreCase("LEAVE") ||
-                                commandSplit[0].equalsIgnoreCase("L")) {
+                    } else if (commandSplit[0].equalsIgnoreCase("LEAVE") ||
+                            commandSplit[0].equalsIgnoreCase("L")) {
                         System.out.println("Leaving...");
                         exit(0);
                     }
                 }
                 messageType = getByDimOrName(commandSplit[0]);
 
-                if (messageType == null)
-                {
+                if (messageType == null) {
                     message = MessageType.DEFAULT + " Hello, from '" + myself + "' not a command : <" + command + "> at " + timestamp + ")";
-                    send(message, timestamp, serverAddress, socket);
+                    send(message, timestamp, serverAddress, socket, host, port);
                     continue;
                 }
-                switch (messageType)
-                {
-                    case PROTECT :
-                        if (commandSplit.length == 3 && ProtectionType.isIn(commandSplit[1]) && Utils.isNumeric(commandSplit[2]))
-                        {
+                switch (messageType) {
+                    case PROTECT:
+                        if (commandSplit.length == 3 && ProtectionType.isIn(commandSplit[1]) && Utils.isNumeric(commandSplit[2])) {
                             message = messageType.name() + " " + ProtectionType.getByDimOrName(commandSplit[1]) + " " + commandSplit[2];
-                        }
-                        else
-                        {
+                        } else {
                             message = messageType.name() + " " + ProtectionType.HEAL + " " + defaultValue;
                             System.out.println("Command error, send " + message + " instead of : " + command);
                         }
@@ -111,17 +117,16 @@ public class Client implements Callable<Integer> {
 
                 }
 
-                send(message, timestamp, serverAddress, socket);
+                send(message, timestamp, serverAddress, socket, host, port);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return 1;
+            throw new RuntimeException(e);
         }
     }
 
-    private void send(String message, String timestamp, InetAddress serverAddress, DatagramSocket socket) throws Exception
-    {
-        System.out.println("Unicasting '" + message + "' to " + parent.getHost() + ":" + parent.getPort() + " at " + timestamp);
+    public void send(String message, String timestamp, InetAddress serverAddress, DatagramSocket socket, String host, int port) throws Exception {
+        System.out.println("Unicasting '" + message + "' to " + host + ":" + port + " at " + timestamp);
 
         byte[] payload = message.getBytes(StandardCharsets.UTF_8);
 
@@ -129,7 +134,7 @@ public class Client implements Callable<Integer> {
                 payload,
                 payload.length,
                 serverAddress,
-                parent.getPort()
+                port
         );
         System.out.print("sending... ");
         socket.send(datagram); // send data to serv
@@ -151,18 +156,13 @@ public class Client implements Callable<Integer> {
         System.out.println("received :-" + message + "-"); // TODO : remove after tests (tmp debug)
         String[] splitMessage = message.split(" ");
 
-        switch (messageType)
-        {
-            case ANSWER :
-                if (splitMessage.length <= 1 || splitMessage[1].isEmpty())
-                {
+        switch (messageType) {
+            case ANSWER:
+                if (splitMessage.length <= 1 || splitMessage[1].isEmpty()) {
                     System.out.println("[SERVER ERROR] : server give 0 info ?");
-                }
-                else
-                {
+                } else {
                     System.out.print("[TOWER INFO] :");
-                    for (int i = 1; i < splitMessage.length; ++i)
-                    {
+                    for (int i = 1; i < splitMessage.length; ++i) {
                         System.out.print(" ");
                         System.out.print(splitMessage[i]);
                     }
