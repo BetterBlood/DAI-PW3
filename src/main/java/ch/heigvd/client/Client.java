@@ -5,21 +5,17 @@ import ch.heigvd.utils.ProtectionType;
 import ch.heigvd.utils.Utils;
 import picocli.CommandLine;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Scanner;
-import java.util.concurrent.*;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Scanner;
+import java.util.concurrent.Callable;
 
 import static ch.heigvd.utils.MessageType.getByDimOrName;
 import static java.lang.System.exit;
-import static java.lang.Thread.sleep;
 
 @CommandLine.Command(name = "client", description = "Starts a client for a game of Tower Defense")
 public class Client implements Callable<Integer> {
@@ -35,18 +31,11 @@ public class Client implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        ExecutorService executorService = Executors.newFixedThreadPool(2); // The number of threads in the pool must be the same as the number of tasks you want to run in parallel
-
         try {
-            //executorService.submit(this::listenServer); // Start the first task
-            executorService.submit(this::waitUserInput); // Start the second task
-
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // Wait for termination
+            waitUserInput();
         } catch (Exception e) {
             e.printStackTrace();
             return 1;
-        } finally {
-            executorService.shutdown();
         }
         return 0;
     }
