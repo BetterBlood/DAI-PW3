@@ -93,7 +93,7 @@ public class AlliesWorker implements Callable<Integer> {
             //aucun autre check parce qu'on a codé le client ou bien quand même ?
             String messageToSend = parseMessage(message);
             //nouveau paquet à renvoyer à la personne qui va expédier
-            byte[] payload = message.getBytes(StandardCharsets.UTF_8);
+            byte[] payload = messageToSend.getBytes(StandardCharsets.UTF_8);
 
             DatagramPacket datagram = new DatagramPacket(
                     payload,
