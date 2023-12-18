@@ -1,0 +1,78 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+
+Title Tower Defense Protocol Sequence Diagram
+
+emitter -> server: ATTACK archer 10
+
+client -> server: PROTECT HEAL 10
+server -> client: ANSWER hp:30 defence: 0
+
+emitter -> server: ATTACK archer 10
+
+client -> server: PROTECT DEFEND 10
+server -> client: ANSWER hp:20 defence: 10
+
+emitter -> server: ATTACK archer 10
+
+client -> server: GET_INFO
+server -> client: ANSWER hp:11 defence: 10
+
+emitter -> server: ATTACK archer 10
+emitter -> server: ATTACK archer 10
+
+client -> server : PROTECT HEAL 10
+server -> client: GAME_LOST
+
+@enduml
+
+
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+
+Title Not a command Sequence Diagram
+
+client -> server : NOTACOMMAND
+server -> client : ERROR not an accepted command
+
+@enduml
+
+
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+
+Title multiple clients
+
+emitter -> server: ATTACK archer 10
+
+client1 -> server : PROTECT HEAL 5
+server -> client1: ANSWER hp:25 defence: 0
+
+||30||
+emitter -> server: ATTACK archer 10
+
+client2 -> server: PROTECT HEAL 5
+server -> client2: ANSWER hp:20 defence: 0
+
+emitter -> server: ATTACK archer 10
+
+client2 -> server: PROTECT DEFEND 5
+server -> client2: ANSWER hp:15 defence: 0
+
+emitter -> server: ATTACK archer 10
+
+client2 -> server: GET_INFO
+server -> client2: ANSWER hp:5 defence: 0
+
+emitter -> server: ATTACK archer 10
+
+client1 -> server: GET_INFO
+server -> client1: GAME_LOST
+
+client2 -> server: GET_INFO
+server -> client2: GAME_LOST
+
+@enduml
