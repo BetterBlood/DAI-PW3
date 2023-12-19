@@ -124,8 +124,56 @@ Start an UDP multicast emitter representing an enemy
 ```
 
 
-[//]: # (TODO: add examples)
+## How to use the application
 
+### Server and emitters
+```text
+docker compose up tower warrior archer
+
+[+] Running 3/3
+ ✔ Container dai-pw3-towerdefense-tower-1    Recreated                                                                   0.2s 
+ ✔ Container dai-pw3-towerdefense-warrior-1  Recreated                                                                   0.1s 
+ ✔ Container dai-pw3-towerdefense-archer-1   Recreated                                                                   0.2s 
+Attaching to dai-pw3-towerdefense-archer-1, dai-pw3-towerdefense-tower-1, dai-pw3-towerdefense-warrior-1
+dai-pw3-towerdefense-tower-1    | Multicast receiver started (172.21.0.2:9876)
+dai-pw3-towerdefense-tower-1    | Unicast receiver started (172.21.0.2:1234)
+dai-pw3-towerdefense-archer-1   | archer2 as multicast emitter started (172.21.0.3:9876)
+dai-pw3-towerdefense-warrior-1  | archer1 as multicast emitter started (172.21.0.4:9876)
+dai-pw3-towerdefense-archer-1   | Multicasting 'ATTACK archer2 250' to 239.1.1.1:9876 on interface eth0
+dai-pw3-towerdefense-tower-1    | Multicast receiver (172.21.0.2:9876) received message: ATTACK archer2 250
+...
+dai-pw3-towerdefense-warrior-1  | Multicasting 'ATTACK archer1 500' to 239.1.1.1:9876 on interface eth0
+dai-pw3-towerdefense-tower-1    | Multicast receiver (172.21.0.2:9876) received message: ATTACK archer1 500
+...
+dai-pw3-towerdefense-tower-1    | Unicast receiver (172.21.0.2:1234) received message: GET_INFO
+dai-pw3-towerdefense-tower-1    | Unicast receiver (172.21.0.2:1234) received message: GET_INFO
+...
+dai-pw3-towerdefense-tower-1    | Unicast receiver (172.21.0.2:1234) received message: GET_INFO
+...
+```
+
+### Client
+
+```
+docker compose run ally
+Client emitter started (172.21.0.5:1234)
+listen client console input [h for help] : get
+Unicasting 'GET_INFO' to tower:1234 at 2023-12-19 10:21:20
+sending... data sent !
+[TOWER INFO] : TowerDefense{hp=9500, protection=0}
+listen client console input [h for help] : get
+Unicasting 'GET_INFO' to tower:1234 at 2023-12-19 10:22:01
+sending... data sent !
+[TOWER INFO] : TowerDefense{hp=4000, protection=0}
+listen client console input [h for help] : get
+Unicasting 'GET_INFO' to tower:1234 at 2023-12-19 10:22:04
+sending... data sent !
+[TOWER INFO] : TowerDefense{hp=3500, protection=0}
+listen client console input [h for help] : get
+Unicasting 'GET_INFO' to tower:1234 at 2023-12-19 10:22:40
+sending... data sent !
+[TOWER INFO] : GAME OVER X_X (press enter to leave)
+```
 ## Protocol
 
 ### Section 1 - Overview
