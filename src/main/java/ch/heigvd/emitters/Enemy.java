@@ -33,7 +33,6 @@ public class Enemy implements Callable<Integer> {
     @CommandLine.Option(
             names = {"-i", "--interface"},
             description = "Interface to use.",
-            scope = CommandLine.ScopeType.INHERIT,
             required = true
     )
     private String interfaceName;
@@ -48,16 +47,14 @@ public class Enemy implements Callable<Integer> {
     @CommandLine.Option(
             names = {"-p", "--port"},
             description = "Port to use for the mulitcast connection (default: 9876).",
-            defaultValue = "9876",
-            scope = CommandLine.ScopeType.INHERIT
+            defaultValue = "9876"
     )
     protected int port;
 
     @CommandLine.Option(
             names = {"-h", "--host"},
             description = "Subnet range/multicast address to use.",
-            required = true,
-            scope = CommandLine.ScopeType.INHERIT
+            required = true
     )
     protected String host;
 

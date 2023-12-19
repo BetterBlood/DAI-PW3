@@ -8,6 +8,8 @@ is responding to them.
 
 ## How to build the application
 
+### With Docker
+
 No need to build the docker image as it is [saved](https://github.com/BetterBlood/DAI-PW3/pkgs/container/tower-defense) 
 on the GitHub Container Registry.
 
@@ -17,7 +19,13 @@ If you have done some modifications on the code, build the docker image run the 
 docker build -t ghcr.io/betterblood/tower-defense:latest .
 ```
 
+### Without Docker 
+
+You can build the application using the pre-made build configuration in intellij.
+
 ## How to run the application
+
+### With Docker
 
 In order to run the server and emitters run the following command:
 
@@ -30,6 +38,91 @@ And to start a new client run the following command (you can run multiple client
 ```
 docker compose run ally
 ```
+
+### Without Docker
+
+To run the clients (allies):
+```
+java -jar .\target\dai-pw3-1.0-SNAPSHOT.jar client
+```
+
+To run the server (tower)
+```
+ java -jar .\target\dai-pw3-1.0-SNAPSHOT.jar server -i eth0 --hostm 239.1.1.1
+```
+
+To run the emitters (ennemies)
+```
+ java -jar .\target\dai-pw3-1.0-SNAPSHOT.jar enemy -i eth0 --host 239.1.1.1
+```
+
+
+Those are running the with the default parameters, if you want custom ports and host you can specify them, as pictures in this help command from 
+
+- Base help
+```
+Usage: dai-pw3-1.0-SNAPSHOT.jar [-hV] [COMMAND]
+Tower Defense, third Practical Work of DAI
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+Commands:
+  client  Starts a client for a game of Tower Defense
+  enemy   Start an UDP multicast emitter representing an enemy
+  server  Starts a server for a game of Tower Defense
+
+```
+- Server help
+
+```
+Usage: dai-pw3-1.0-SNAPSHOT.jar server [-hV] [-bh=<baseHP>]
+                                       [-bp=<baseProtection>] -hm=<hostm>
+                                       -i=<interfaceName> [-pm=<portm>]
+                                       [-pu=<portu>]
+Starts a server for a game of Tower Defense
+      -bh, --baseHP=<baseHP> Base hp for the tower.
+      -bp, --baseProtection=<baseProtection>
+                             Base protection for the tower, between 0-100.
+  -h, --help                 Show this help message and exit.
+      -hm, --hostm=<hostm>   Subnet range/multicast address to use.
+  -i, --interface=<interfaceName>
+                             Interface to use
+      -pm, --portm=<portm>   Port to use for the mulitcast connection
+                               (ennemies) (default: 9876).
+      -pu, --portu=<portu>   Port to use for the unicast connections (allies)
+                               (default: 1234).
+  -V, --version              Print version information and exit.
+
+```
+
+- Client help
+
+```
+Usage: dai-pw3-1.0-SNAPSHOT.jar client [-h=<host>] [-p=<port>]
+Starts a client for a game of Tower Defense
+  -h, --host=<host>   Host for the unicast connection
+  -p, --port=<port>   Port to use for the mulitcast connection (default: 1234).
+
+```
+
+- Emitter help
+
+```
+Usage: dai-pw3-1.0-SNAPSHOT.jar enemy [-d=<damage>] -h=<host>
+                                      -i=<interfaceName> [-n=<name>]
+                                      [-p=<port>] [-pa=<pause>]
+Start an UDP multicast emitter representing an enemy
+  -d, --damage=<damage>      Damage sent to tower (default: 10).
+  -h, --host=<host>          Subnet range/multicast address to use.
+  -i, --interface=<interfaceName>
+                             Interface to use.
+  -n, --name=<name>          Name of the enemy.
+  -p, --port=<port>          Port to use for the mulitcast connection (default:
+                               9876).
+      -pa, --pause=<pause>   Pause between attacks (in milliseconds) (default:
+                               10000).
+
+```
+
 
 [//]: # (TODO: add examples)
 
