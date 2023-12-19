@@ -1,5 +1,6 @@
 package ch.heigvd.emitters;
 
+import ch.heigvd.utils.MessageType;
 import picocli.CommandLine;
 
 import java.io.IOException;
@@ -15,8 +16,6 @@ import java.util.concurrent.TimeUnit;
         description = "Start an UDP multicast emitter representing an enemy"
 )
 public class Enemy implements Callable<Integer> {
-    @CommandLine.ParentCommand
-    private ch.heigvd.Main parent;
     @CommandLine.Option(
             names = {"-pa", "--pause"},
             description = "Pause between attacks (in milliseconds) (default: 10000).",
@@ -67,7 +66,7 @@ public class Enemy implements Callable<Integer> {
     public Integer call() {
         try (MulticastSocket socket = new MulticastSocket(port)) {
             String myself = InetAddress.getLocalHost().getHostAddress() + ":" + port;
-            System.out.println("Archer Multicast emitter started (" + myself + ")");
+            System.out.println(name + " as multicast emitter started (" + myself + ")");
 
             InetAddress multicastAddress = InetAddress.getByName(host);
             InetSocketAddress group = new InetSocketAddress(multicastAddress, port);
@@ -77,7 +76,7 @@ public class Enemy implements Callable<Integer> {
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
             scheduler.scheduleAtFixedRate(() -> {
                 try {
-                    String message = "ATTACK " + name + " " + damage;
+                    String message = MessageType.getByDimOrName("att").name() + " " + name + " " + damage;
 
                     System.out.println("Multicasting '" + message + "' to " + host + ":" + port + " on interface " + interfaceName);
 
