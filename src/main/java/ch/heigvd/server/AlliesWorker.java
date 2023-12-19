@@ -116,7 +116,7 @@ public class AlliesWorker implements Callable<Integer> {
             return response;
         }
 
-        if(tower.getHp() == 0){
+        if(tower.getHp() <= 0){
             return MessageType.getByDimOrName("glo").name();
         }
 
