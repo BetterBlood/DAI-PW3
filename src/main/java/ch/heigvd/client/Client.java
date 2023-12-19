@@ -30,9 +30,6 @@ public class Client implements Callable<Integer> {
                                                 "\tget, GET_INFO : request tower information\n" +
                                                 "\tl, leave : to quit application";
 
-    @CommandLine.ParentCommand
-    protected ch.heigvd.Main parent;
-
     @CommandLine.Option(
             names = {"-p", "--port"},
             description = "Port to use for the mulitcast connection (default: 1234).",
@@ -98,8 +95,6 @@ public class Client implements Callable<Integer> {
 
                 if (messageType == null) {
                     System.out.println("[NOT A COMMAND] '" + command + "' is not recognized as a command. [enter 'h' for help]");
-                    //message = MessageType.DEFAULT + " Hello, from '" + myself + "' not a command : <" + command + "> at " + timestamp + ")";
-                    //send(message, timestamp, serverAddress, socket, host, port);
                     continue;
                 }
                 switch (messageType) {
@@ -166,12 +161,12 @@ public class Client implements Callable<Integer> {
                 StandardCharsets.UTF_8
         );
         MessageType messageType = MessageType.findByName(message.split(" ")[0]);
-        //System.out.println("RECEIVED :" + message);
+        
         if (messageType == null) {
             System.out.println("received message not handled : " + message);
             return;
         }
-        //System.out.println("received : -" + message + "-"); // TODO : remove after tests (tmp debug)
+
         String[] splitMessage = message.split(" ");
 
         switch (messageType) {
