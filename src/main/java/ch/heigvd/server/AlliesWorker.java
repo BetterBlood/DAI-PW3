@@ -2,6 +2,7 @@ package ch.heigvd.server;
 
 import ch.heigvd.utils.MessageType;
 import ch.heigvd.utils.ProtectionType;
+import ch.heigvd.utils.Utils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -115,23 +116,30 @@ public class AlliesWorker implements Callable<Integer> {
             return response;
         }
 
+        if(tower.getHp() == 0){
+            return MessageType.getByDimOrName("glo").name();
+        }
+
         switch (messageType) {
             case PROTECT:
                 ProtectionType protectionType = ProtectionType.findByName(splitMessage[1]);
-                if (protectionType == null) {
+                if (protectionType == null || splitMessage.length != 3) {
                     response = "ERROR : protection type not found";
                     return response;
                 }
-                switch (protectionType) {
-                    case DEFEND:
-                        tower.addProtection(Integer.parseInt(splitMessage[2]));
-                        break;
-                    case HEAL:
-                        tower.heal(Integer.parseInt(splitMessage[2]));
-                        break;
+                if(Utils.isNumeric(splitMessage[2])){
+                    switch (protectionType) {
+                        case DEFEND:
+                            tower.addProtection(Integer.parseInt(splitMessage[2]));
+                            break;
+                        case HEAL:
+                            tower.heal(Integer.parseInt(splitMessage[2]));
+                            break;
+                    }
                 }
             case GET_INFO:
                 break;
+
         }
         response = ANSWER + " " + tower.toString();
         return response;
