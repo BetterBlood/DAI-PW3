@@ -59,7 +59,7 @@ server -> client2: ANSWER hp:20 defence: 0
 
 emitter -> server: ATTACK archer 10
 
-client2 -> server: PROTECT DEFEND 5
+client2 -> server: PROTECT HEAL 5
 server -> client2: ANSWER hp:15 defence: 0
 
 emitter -> server: ATTACK archer 10

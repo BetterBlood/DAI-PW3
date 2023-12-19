@@ -10,7 +10,7 @@ public class TowerDefense {
 
     TowerDefense(int baseHP, int baseProtection) {
         this.hp = baseHP;
-        this.protection = baseProtection;
+        this.protection = baseProtection%100;
     }
 
     /**
@@ -33,7 +33,7 @@ public class TowerDefense {
      * @param protection protection to add
      */
     public synchronized void addProtection(int protection) {
-        this.protection += protection;
+        this.protection += protection%100;
     }
 
     @Override

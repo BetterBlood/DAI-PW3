@@ -1,6 +1,5 @@
 package ch.heigvd.server;
 
-import picocli.CommandLine;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
@@ -9,13 +8,11 @@ public class EnnemiesWorker implements Callable<Integer> {
 
     private TowerDefense tower;
     private String interfaceName;
-    private ch.heigvd.Main parent;
     private int port;
     private String host;
-   public EnnemiesWorker(TowerDefense tower, String interfaceName,ch.heigvd.Main parent , int portm, String hostm) {
+   public EnnemiesWorker(TowerDefense tower, String interfaceName, int portm, String hostm) {
         this.tower = tower;
         this.interfaceName = interfaceName;
-        this.parent = parent;
         this.port = portm;
         host = hostm;
     }
@@ -49,7 +46,7 @@ public class EnnemiesWorker implements Callable<Integer> {
                 );
 
                 String[] msgChunks = message.split(" ");
-
+                //we only process the correct msg
                 if(msgChunks[0].equals("ATTACK")){
                     processAttack(msgChunks);
                 }

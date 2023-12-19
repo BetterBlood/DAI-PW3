@@ -8,32 +8,27 @@ is responding to them.
 
 ## How to build the application
 
-If you are using IntelliJ, there is a run configuration already set up for you. You can just run it.
-Otherwise, you can use the following commands:
-
-```bash
-# Download the dependencies
-./mvnw dependency:resolve
-
-# Package the application
-./mvnw package
-```
-
 No need to build the docker image as it is [saved](https://github.com/BetterBlood/DAI-PW3/pkgs/container/tower-defense) 
 on the GitHub Container Registry.
+
+If you have done some modifications on the code, build the docker image run the following command:
+
+```
+docker build -t ghcr.io/betterblood/tower-defense:latest .
+```
 
 ## How to run the application
 
 In order to run the server and emitters run the following command:
 
 ```
-docker compose up -d
+docker compose up server multicast-emitter-archer1 multicast-emitter-archer2
 ```
 
 And to start a new client run the following command:
 
 ```
-java -jar .\target\dai-pw3-1.0-SNAPSHOT.jar client
+docker compose run client
 ```
 
 [//]: # (TODO: add examples)
@@ -64,7 +59,7 @@ for enemies on the multicast address `239.1.1.1` and port `9876`
 #### emitters - MULTICAST communication with server (tower):
 
 - `ATTACK <type> <dmg>`: used to attack the tower
-  - `<type>` : type of enemy
+  - `<type>` : name of enemy
   - `<dmg>`  : amount of dmg made to the tower
 
 #### client - UNICAST communication with server (tower):
