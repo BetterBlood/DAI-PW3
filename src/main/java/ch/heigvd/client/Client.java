@@ -21,6 +21,14 @@ import static java.lang.System.exit;
 public class Client implements Callable<Integer> {
     private final Scanner sc = new Scanner(System.in);
     private final SimpleDateFormat dateFormat;
+    private final static String helpClient =    "Help Command Menu [Case Insensitive]:\n" +
+                                                "\th, H, help, HELP : this menu\n" +
+                                                "\tpro h 10 : heal with 10\n" +
+                                                "\tprotect heal 15 : heal with 15\n" +
+                                                "\tpro d 20 : defend with 20\n" +
+                                                "\tpro defend 25 : defend with 25\n" +
+                                                "\tget, GET_INFO : request tower information\n" +
+                                                "\tl, leave : to quit application";
 
     @CommandLine.ParentCommand
     protected ch.heigvd.Main parent;
@@ -70,25 +78,18 @@ public class Client implements Callable<Integer> {
             String timestamp;
             //chaque fois qu'on send on attend la réponse sur LE MEME DATAGRAM envoyé on est donc seulement un emetteur
             while (true) {
-                System.out.println("listen client console input :" + port);
+                System.out.print("listen client console input [h for help] : ");
                 command = sc.nextLine().toUpperCase(); // listen user input
                 timestamp = dateFormat.format(new Date());
                 commandSplit = command.split(" ");
 
                 if (commandSplit.length == 0 || !MessageType.isIn(commandSplit[0])) {
-                    if (commandSplit[0].equalsIgnoreCase("HELP") ||
+                    if (    commandSplit[0].equalsIgnoreCase("HELP") ||
                             commandSplit[0].equalsIgnoreCase("H")) {
-                        System.out.println("Help Command Menu :");
-                        System.out.println("h, H, help, HELP : this menu");
-                        System.out.println("pro h 15 : heal with 15");
-                        System.out.println("protect heal 15 : heal with 15");
-                        System.out.println("pro d 15 : defend with 15");
-                        System.out.println("pro defend 15 : defend with 15");
-                        System.out.println("get, GET_INFO : request tower information");
-                        System.out.println("l, leave : to quit application");
+                        System.out.println(helpClient);
                         continue;
-                    } else if (commandSplit[0].equalsIgnoreCase("LEAVE") ||
-                            commandSplit[0].equalsIgnoreCase("L")) {
+                    } else if ( commandSplit[0].equalsIgnoreCase("LEAVE") ||
+                                commandSplit[0].equalsIgnoreCase("L")) {
                         System.out.println("Leaving...");
                         exit(0);
                     }
@@ -96,17 +97,28 @@ public class Client implements Callable<Integer> {
                 messageType = getByDimOrName(commandSplit[0]);
 
                 if (messageType == null) {
-                    message = MessageType.DEFAULT + " Hello, from '" + myself + "' not a command : <" + command + "> at " + timestamp + ")";
-                    send(message, timestamp, serverAddress, socket, host, port);
+                    System.out.println("[NOT A COMMAND] '" + command + "' is not recognized as a command. [enter 'h' for help]");
+                    //message = MessageType.DEFAULT + " Hello, from '" + myself + "' not a command : <" + command + "> at " + timestamp + ")";
+                    //send(message, timestamp, serverAddress, socket, host, port);
                     continue;
                 }
                 switch (messageType) {
                     case PROTECT:
-                        if (commandSplit.length == 3 && ProtectionType.isIn(commandSplit[1]) && Utils.isNumeric(commandSplit[2])) {
-                            message = messageType.name() + " " + ProtectionType.getByDimOrName(commandSplit[1]) + " " + commandSplit[2];
+                        if (commandSplit.length == 3) {
+                            if (ProtectionType.isIn(commandSplit[1])) {
+                                if (Utils.isNumeric(commandSplit[2])) {
+                                    message = messageType.name() + " " + ProtectionType.getByDimOrName(commandSplit[1]) + " " + commandSplit[2];
+                                } else {
+                                    System.out.println("[NUMBER ERROR] '" + command + "' has a non numeric for the amount. [enter 'h' for help]");
+                                    continue;
+                                }
+                            } else {
+                                System.out.println("[PROTECTION TYPE NOT RECOGNIZED] '" + command + "' has a non-recognized protectionType. [enter 'h' for help]");
+                                continue;
+                            }
                         } else {
-                            message = messageType.name() + " " + ProtectionType.HEAL + " " + defaultValue;
-                            System.out.println("Command error, send " + message + " instead of : " + command);
+                            System.out.println("[PARAMETERS ERROR] '" + command + "' has a parameter length not recognize. [enter 'h' for help]");
+                            continue;
                         }
                         break;
 
@@ -115,9 +127,8 @@ public class Client implements Callable<Integer> {
                         break;
 
                     default:
-                        message = MessageType.DEFAULT + " Hello, from '" + myself + "' error command : <" + command + "> at " + timestamp + ")";
-                        break;
-
+                        System.out.println("[MESSAGE TYPE NOT RECOGNIZED] '" + command + "' is not a recognized client command. [enter 'h' for help]");
+                        continue;
                 }
 
                 send(message, timestamp, serverAddress, socket, host, port);
@@ -141,7 +152,7 @@ public class Client implements Callable<Integer> {
         );
         System.out.print("sending... ");
         socket.send(datagram); // send data to serv
-        System.out.println("data sended !");
+        System.out.println("data sent !");
 
         byte[] responseBuffer = new byte[1024];
         DatagramPacket responsePacket = new DatagramPacket(responseBuffer, responseBuffer.length);
@@ -160,7 +171,7 @@ public class Client implements Callable<Integer> {
             System.out.println("received message not handled : " + message);
             return;
         }
-        System.out.println("received : -" + message + "-"); // TODO : remove after tests (tmp debug)
+        //System.out.println("received : -" + message + "-"); // TODO : remove after tests (tmp debug)
         String[] splitMessage = message.split(" ");
 
         switch (messageType) {
@@ -178,13 +189,13 @@ public class Client implements Callable<Integer> {
                 break;
 
             case GAME_LOST:
-                System.out.println("[TOWER INFO] : GAME OVER X_X (presse enter to leave)");
+                System.out.println("[TOWER INFO] : GAME OVER X_X (press enter to leave)");
                 sc.nextLine();
                 exit(0);
                 break;
 
             case ERROR:
-                System.out.println("[SERVER ERROR] : invalide commande :`" + message + "`");
+                System.out.println("[SERVER ERROR] : invalid command :`" + message + "`");
                 break;
 
             case PROTECT:
