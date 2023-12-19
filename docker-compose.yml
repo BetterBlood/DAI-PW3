@@ -3,38 +3,39 @@ networks:
     name: my-isolated-network-name
 
 services:
-  multicast-emitter-archer1:
+  warrior:
     image: ghcr.io/betterblood/tower-defense:latest
     command:
       - enemy
       - --pause=10000
-      - --damage=15000
+      - --damage=500
       - --host=239.1.1.1
       - --port=9876
       - --interface=eth0
       - --name=archer1
 
-  multicast-emitter-archer2:
+  archer:
     image: ghcr.io/betterblood/tower-defense:latest
     command:
       - enemy
       - --pause=3000
-      - --damage=1000
+      - --damage=250
       - --host=239.1.1.1
       - --port=9876
       - --interface=eth0
       - --name=archer2
-  server:
+  tower:
     image: ghcr.io/betterblood/tower-defense:latest
     command:
       - server
       - --hostm=239.1.1.1
-      - --hostu=localhost
       - --portm=9876
       - --portu=1234
+      - --baseHP=10000
+      - --baseProtection=0
       - --interface=eth0
-  client:
+  ally:
     image: ghcr.io/betterblood/tower-defense:latest
     command:
       - client
-      - --host=server
+      - --host=tower

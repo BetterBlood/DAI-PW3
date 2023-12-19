@@ -22,13 +22,13 @@ docker build -t ghcr.io/betterblood/tower-defense:latest .
 In order to run the server and emitters run the following command:
 
 ```
-docker compose up server multicast-emitter-archer1 multicast-emitter-archer2
+docker compose up tower warrior archer
 ```
 
-And to start a new client run the following command:
+And to start a new client run the following command (you can run multiple clients):
 
 ```
-docker compose run client
+docker compose run ally
 ```
 
 [//]: # (TODO: add examples)
