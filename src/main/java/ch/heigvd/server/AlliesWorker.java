@@ -20,22 +20,20 @@ public class AlliesWorker implements Callable<Integer> {
     //we still don't know how to use this param with picocli
     private static final int NUMBER_OF_THREADS = 1;
     static private int port;
-    static private String host;
 
-    public AlliesWorker(TowerDefense tower, int portu, String hostu) {
+    public AlliesWorker(TowerDefense tower, int portu) {
         this.tower = tower;
         this.port = portu;
-        host = hostu;
 
     }
 
     @Override
     public Integer call() {
-        // This is new - we define an executor service
+        // we define an executor service
         ExecutorService executor = null;
 
         try (DatagramSocket socket = new DatagramSocket(port)) {
-            // This is new - the executor service has a pool of threads
+            //the executor service has a pool of threads
             executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
             String myself = InetAddress.getLocalHost().getHostAddress() + ":" + port;
@@ -51,7 +49,7 @@ public class AlliesWorker implements Callable<Integer> {
 
                 socket.receive(packet);
 
-                // This is new - we submit a new task to the executor service
+                // submit a new task to the executor service
                 executor.submit(new ClientHandler(packet, myself, tower, socket));
             }
         } catch (Exception e) {
@@ -60,7 +58,7 @@ public class AlliesWorker implements Callable<Integer> {
         }
     }
 
-    // This is new - we define a new class to handle the client
+    // class to handle the client
     static class ClientHandler implements Runnable {
 
         private final DatagramPacket packet;
@@ -87,7 +85,6 @@ public class AlliesWorker implements Callable<Integer> {
 
             System.out.println("Unicast receiver (" + myself + ") received message: " + message);
 
-            //aucun autre check parce qu'on a codé le client ou bien quand même ?
             String messageToSend = parseMessage(message);
             //nouveau paquet à renvoyer à la personne qui va expédier
             byte[] payload = messageToSend.getBytes(StandardCharsets.UTF_8);
@@ -97,7 +94,7 @@ public class AlliesWorker implements Callable<Integer> {
                     payload.length,
                     packet.getAddress(),
                     packet.getPort() //connection bidirectionnelle dans ce contexte là grâce
-                    // à l'information de l'expéditeur contenu dans le datagram
+                                    // à l'information de l'expéditeur contenu dans le datagram
             );
             try {
                 socket.send(datagram);

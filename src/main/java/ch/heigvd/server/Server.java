@@ -29,13 +29,6 @@ public class Server implements Callable<Integer> {
     protected int portm;
 
     @CommandLine.Option(
-            names = {"-hu", "--hostu"},
-            description = "IP address to use for the unicast connections",
-            required = true
-    )
-    protected String hostu;
-
-    @CommandLine.Option(
             names = {"-hm", "--hostm"},
             description = "Subnet range/multicast address to use.",
             required = true
@@ -77,7 +70,7 @@ public class Server implements Callable<Integer> {
     }
 
     public Integer alliesWorker() {
-        AlliesWorker a = new AlliesWorker(tower,portu,hostu);
+        AlliesWorker a = new AlliesWorker(tower,portu);
         a.call();
         return 1;
     }
